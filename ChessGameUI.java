@@ -60,8 +60,25 @@ public class ChessGameUI extends JFrame {
 
     private void updateButton(int x, int y) {
         Piece piece = board.getBoard()[x][y];
-        boardButtons[x][y].setText(piece == null ? "" : piece.getClass().getSimpleName());
-        boardButtons[x][y].setBackground((x + y) % 2 == 0 ? Color.PINK : Color.WHITE);
+        JButton button = boardButtons[x][y];
+
+        if (piece == null) {
+            button.setIcon(null); // No piece on this square
+        } else {
+            String pieceName = piece.getClass().getSimpleName().toLowerCase(); // e.g., "pawn", "rook"
+            String color = piece.isWhite() ? "white" : "black"; // e.g., "white", "black"
+            String imagePath = "resources/" + color + "_" + pieceName + ".png"; // Path to image
+
+            // Load and set the image as an icon
+            try {
+                ImageIcon icon = new ImageIcon(imagePath);
+                Image scaledImage = icon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH); // Scale to fit button
+                button.setIcon(new ImageIcon(scaledImage));
+            } catch (Exception e) {
+                System.err.println("Error loading image: " + imagePath);
+            }
+        }
+        button.setBackground((x + y) % 2 == 0 ? Color.PINK : Color.WHITE);
     }
 
     public static void main(String[] args) {
