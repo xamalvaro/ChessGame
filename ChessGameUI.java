@@ -4,6 +4,7 @@ import javax.swing.*;
 public class ChessGameUI extends JFrame {
     private Board board;
     private JButton[][] boardButtons;
+    private JLabel turnLabel; // Label to display the current turn
     private int selectedX = -1, selectedY = -1;
     private boolean isWhiteTurn = true;
 
@@ -42,8 +43,17 @@ public class ChessGameUI extends JFrame {
     }
 
     private void addControlButtons() {
-        JPanel controls = new JPanel();
-        controls.setLayout(new FlowLayout());
+        JPanel controls = new JPanel(new BorderLayout());
+
+        // Left panel for turn display
+        JPanel leftPanel = new JPanel();
+        turnLabel = new JLabel("White's Turn");
+        turnLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        leftPanel.add(turnLabel);
+        controls.add(leftPanel, BorderLayout.WEST);
+
+        // Right panel for control buttons
+        JPanel rightPanel = new JPanel(new FlowLayout());
 
         // Undo Button
         JButton undoButton = new JButton("Undo");
@@ -51,7 +61,7 @@ public class ChessGameUI extends JFrame {
             board.undo();
             refreshBoard();
         });
-        controls.add(undoButton);
+        rightPanel.add(undoButton);
 
         // Redo Button
         JButton redoButton = new JButton("Redo");
@@ -59,12 +69,19 @@ public class ChessGameUI extends JFrame {
             board.redo();
             refreshBoard();
         });
-        controls.add(redoButton);
+        rightPanel.add(redoButton);
 
         // Surrender Button
         JButton surrenderButton = new JButton("Surrender");
         surrenderButton.addActionListener(e -> handleSurrender());
-        controls.add(surrenderButton);
+        rightPanel.add(surrenderButton);
+
+        // End Game Button
+        JButton endGameButton = new JButton("End Game");
+        endGameButton.addActionListener(e -> handleEndGame());
+        rightPanel.add(endGameButton);
+
+        controls.add(rightPanel, BorderLayout.EAST);
 
         add(controls, BorderLayout.SOUTH);
     }
@@ -79,6 +96,7 @@ public class ChessGameUI extends JFrame {
         } else { // Second click
             if (board.movePiece(selectedX, selectedY, x, y)) {
                 isWhiteTurn = !isWhiteTurn; // Switch turn
+                updateTurnLabel(); // Update the turn label
             }
             selectedX = -1;
             selectedY = -1;
@@ -92,10 +110,16 @@ public class ChessGameUI extends JFrame {
         resetGame();
     }
 
+    private void handleEndGame() {
+        dispose(); // Close the ChessGameUI window
+        new MenuScreen(); // Return to the menu screen
+    }
+
     private void resetGame() {
         board = new Board();
         isWhiteTurn = true;
         refreshBoard();
+        updateTurnLabel(); // Reset the turn label
     }
 
     private void refreshBoard() {
@@ -127,6 +151,10 @@ public class ChessGameUI extends JFrame {
             }
         }
         button.setBackground((x + y) % 2 == 0 ? Color.PINK : Color.WHITE);
+    }
+
+    private void updateTurnLabel() {
+        turnLabel.setText(isWhiteTurn ? "White's Turn" : "Black's Turn");
     }
 
     public static void main(String[] args) {
