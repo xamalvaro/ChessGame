@@ -10,27 +10,63 @@ public class ChessGameUI extends JFrame {
     public ChessGameUI() {
         board = new Board();
         boardButtons = new JButton[8][8];
-        setLayout(new GridLayout(8, 8));
-        initializeBoard();
+        setLayout(new BorderLayout());
+
+        // Create and add the chessboard
+        JPanel boardPanel = new JPanel(new GridLayout(8, 8));
+        initializeBoard(boardPanel);
+        add(boardPanel, BorderLayout.CENTER);
+
+        // Add control buttons
+        addControlButtons();
+
         setTitle("Chess Game");
-        setSize(800, 800);
+        setSize(800, 850); // Increased size to fit controls
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
     }
 
-    private void initializeBoard() {
+    private void initializeBoard(JPanel boardPanel) {
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
                 JButton button = new JButton();
                 button.setBackground((x + y) % 2 == 0 ? Color.PINK : Color.WHITE);
-                final int finalX = x; // Fix lambda scope issue
+                final int finalX = x;
                 final int finalY = y;
                 button.addActionListener(e -> handleSquareClick(finalX, finalY));
                 boardButtons[x][y] = button;
-                add(button);
+                boardPanel.add(button);
                 updateButton(x, y);
             }
         }
+    }
+
+    private void addControlButtons() {
+        JPanel controls = new JPanel();
+        controls.setLayout(new FlowLayout());
+
+        // Undo Button
+        JButton undoButton = new JButton("Undo");
+        undoButton.addActionListener(e -> {
+            board.undo();
+            refreshBoard();
+        });
+        controls.add(undoButton);
+
+        // Redo Button
+        JButton redoButton = new JButton("Redo");
+        redoButton.addActionListener(e -> {
+            board.redo();
+            refreshBoard();
+        });
+        controls.add(redoButton);
+
+        // Surrender Button
+        JButton surrenderButton = new JButton("Surrender");
+        surrenderButton.addActionListener(e -> handleSurrender());
+        controls.add(surrenderButton);
+
+        add(controls, BorderLayout.SOUTH);
     }
 
     private void handleSquareClick(int x, int y) {
@@ -48,6 +84,18 @@ public class ChessGameUI extends JFrame {
             selectedY = -1;
             refreshBoard();
         }
+    }
+
+    private void handleSurrender() {
+        String winner = isWhiteTurn ? "Black" : "White";
+        JOptionPane.showMessageDialog(this, winner + " wins!", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+        resetGame();
+    }
+
+    private void resetGame() {
+        board = new Board();
+        isWhiteTurn = true;
+        refreshBoard();
     }
 
     private void refreshBoard() {
